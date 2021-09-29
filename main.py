@@ -25,7 +25,7 @@ def main(args):
         if not os.path.isdir(args.state_dir):
             os.makedirs(args.state_dir)
         
-        if args.model == 'fedweit':
+        if args.model == 'dfcl':
             from models.dfcl.server import Server
             server = Server(args)
             server.run()
