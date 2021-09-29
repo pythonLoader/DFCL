@@ -22,19 +22,31 @@ class Server(ServerModule):
     def train_clients(self):
         cids = np.arange(self.args.num_clients).tolist()
         num_selection = int(round(self.args.num_clients*self.args.frac_clients))
+
+        print("############# Debug Phase On ################")
+
+        print("Client dict->",self.clients)
+        print("Parallel clients -> ",self.parallel_clients)
+        print(self.args.num_rounds*self.args.num_tasks)
+
         for curr_round in range(self.args.num_rounds*self.args.num_tasks):
             self.updates = []
             self.curr_round = curr_round+1
+            self.aggregator_client = None
             self.is_last_round = self.curr_round%self.args.num_rounds==0
             if self.is_last_round:
                 self.client_adapts = []
             selected_ids = random.sample(cids, num_selection) # pick clients
             self.logger.print('server', 'round:{} train clients (selected_ids: {})'.format(curr_round, selected_ids))
             # train selected clients in parallel
+            
+            # print("")
+
             for clients in self.parallel_clients:
                 self.threads = []
                 for gid, cid in enumerate(clients):
                     client = self.clients[gid]
+                    
                     selected = True if cid in selected_ids else False
                     with tf.device('/device:GPU:{}'.format(gid)):
                         thrd = threading.Thread(target=self.invoke_client, args=(client, cid, curr_round, selected, self.get_weights(), self.get_adapts()))
@@ -44,8 +56,12 @@ class Server(ServerModule):
                 for thrd in self.threads:
                     thrd.join()
             # update
+            
+
+
             aggr = self.train.aggregate(self.updates)
             self.set_weights(aggr)
+
         self.logger.print('server', 'done. ({}s)'.format(time.time()-self.start_time))
         sys.exit()
 

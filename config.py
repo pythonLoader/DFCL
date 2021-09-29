@@ -4,7 +4,7 @@ def set_config(args):
 
     args.output_path = os.path.join(os.getcwd(),"output")
 
-    args.sparse_comm = True 
+    args.sparse_comm = False 
     args.client_sparsity = 0.3
     args.server_sparsity = 0.3 
 
