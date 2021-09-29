@@ -14,12 +14,6 @@ from misc.utils import *
 from mixture_loader.mixture import *
 
 class DataGenerator:
-    """ Data Generator
-    Generating non_iid_50 task
-    
-    Created by:
-        Wonyong Jeong (wyjeong@kaist.ac.kr)
-    """
     def __init__(self, args):
         self.args = args
         self.seprate_ratio = (0.7, 0.2, 0.1) # train, test, valid
@@ -27,14 +21,11 @@ class DataGenerator:
         self.mixture_filename = 'mixture.npy'
         self.base_dir = os.path.join(self.args.task_path, self.args.task) 
         self.did_to_dname = {
-            0: 'cifar10',
-            1: 'cifar100',
-            2: 'mnist',
+            0: 'cifar100',
+            1: 'mnist',
+            2: 'fashion_mnist',
             3: 'svhn',
-            4: 'fashion_mnist',
-            5: 'traffic_sign',
-            6: 'face_scrub',
-            7: 'not_mnist',
+            4: 'traffic_sign'
         }
         self.generate_data()
 
@@ -79,6 +70,9 @@ class DataGenerator:
         labels = np.unique(y)
         random_shuffle(self.args.seed, labels)
         labels_per_task = [labels[i:i+self.args.num_classes] for i in range(0, len(labels), self.args.num_classes)]
+        
+        print(labels_per_task)
+
         for task_id, _labels in enumerate(labels_per_task):
             if dataset_id == 5 and task_id == 8:
                 continue

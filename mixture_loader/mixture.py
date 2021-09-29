@@ -22,33 +22,16 @@ def get(seed=0, fixed_order=False, pc_valid=0.15, base_dir=None):
     taskcla=[]
     size= [32, 32, 3] # [3,32,32]
 
-    idata=np.arange(8)
+    idata=np.arange(5)
     if not fixed_order:
         idata=list(shuffle(idata,random_state=seed))
-    # print('Task order =',idata)
+    print('Task order =',idata)
 
     if not os.path.isdir(base_dir+'/data/binary_mixture/'):
         os.makedirs(base_dir+'/data/binary_mixture')
         # Pre-load
         for n,idx in enumerate(idata):
             if idx==0:
-                # CIFAR10
-                mean=[x/255 for x in [125.3,123.0,113.9]]
-                std=[x/255 for x in [63.0,62.1,66.7]]
-                dat={}
-                dat['train']=datasets.CIFAR10(base_dir+'/data/',train=True,download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
-                dat['test']=datasets.CIFAR10(base_dir+'/data/',train=False,download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
-                data[n]={}
-                data[n]['name']='cifar10'
-                data[n]['ncla']=10
-                for s in ['train','test']:
-                    loader=torch.utils.data.DataLoader(dat[s],batch_size=1,shuffle=False)
-                    data[n][s]={'x': [],'y': []}
-                    for image,target in loader:
-                        data[n][s]['x'].append(image)
-                        data[n][s]['y'].append(target.numpy()[0])
-
-            elif idx==1:
                 # CIFAR100
                 mean=[x/255 for x in [125.3,123.0,113.9]]
                 std=[x/255 for x in [63.0,62.1,66.7]]
@@ -65,7 +48,7 @@ def get(seed=0, fixed_order=False, pc_valid=0.15, base_dir=None):
                         data[n][s]['x'].append(image)
                         data[n][s]['y'].append(target.numpy()[0])
 
-            elif idx==2:
+            elif idx==1:
                 # MNIST
                 #mean=(0.1307,) # Mean and std without including the padding
                 #std=(0.3081,)
@@ -87,24 +70,7 @@ def get(seed=0, fixed_order=False, pc_valid=0.15, base_dir=None):
                         data[n][s]['x'].append(image)
                         data[n][s]['y'].append(target.numpy()[0])
 
-            elif idx == 3:
-                # SVHN
-                mean=[0.4377,0.4438,0.4728]
-                std=[0.198,0.201,0.197]
-                dat = {}
-                dat['train']=datasets.SVHN(base_dir+'/data/',split='train',download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
-                dat['test']=datasets.SVHN(base_dir+'/data/',split='test',download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
-                data[n] = {}
-                data[n]['name']='svhn'
-                data[n]['ncla']=10
-                for s in ['train','test']:
-                    loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
-                    data[n][s] = {'x': [], 'y': []}
-                    for image, target in loader:
-                        data[n][s]['x'].append(image)
-                        data[n][s]['y'].append(target.numpy()[0]-1)
-
-            elif idx == 4:
+            elif idx == 2:
                 # FashionMNIST
                 mean=(0.2190,) # Mean and std including the padding
                 std=(0.3318,)
@@ -123,8 +89,25 @@ def get(seed=0, fixed_order=False, pc_valid=0.15, base_dir=None):
                         image=image.expand(1, 3, image.size(2), image.size(3))  # Create 3 equal channels
                         data[n][s]['x'].append(image)
                         data[n][s]['y'].append(target.numpy()[0])
-
-            elif idx == 5:
+            
+            elif idx == 3:
+                # SVHN
+                mean=[0.4377,0.4438,0.4728]
+                std=[0.198,0.201,0.197]
+                dat = {}
+                dat['train']=datasets.SVHN(base_dir+'/data/',split='train',download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+                dat['test']=datasets.SVHN(base_dir+'/data/',split='test',download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+                data[n] = {}
+                data[n]['name']='svhn'
+                data[n]['ncla']=10
+                for s in ['train','test']:
+                    loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
+                    data[n][s] = {'x': [], 'y': []}
+                    for image, target in loader:
+                        data[n][s]['x'].append(image)
+                        data[n][s]['y'].append(target.numpy()[0]-1)
+            
+            elif idx == 4:
                 # Traffic signs
                 mean=[0.3398,0.3117,0.3210]
                 std=[0.2755,0.2647,0.2712]
@@ -141,41 +124,155 @@ def get(seed=0, fixed_order=False, pc_valid=0.15, base_dir=None):
                     for image, target in loader:
                         data[n][s]['x'].append(image)
                         data[n][s]['y'].append(target.numpy()[0])
-            elif idx == 6:
-                # Facescrub 100 faces
-                mean=[0.5163,0.5569,0.4695]
-                std=[0.2307,0.2272,0.2479]
-                dat={}
-                dat['train']=Facescrub(base_dir+'/data/facescrub', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) # 
-                dat['test']=Facescrub(base_dir+'/data/facescrub', train=False, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)]))  # 
-                #mean, std = utils.compute_mean_std_dataset(dat['train']); print(mean,std); sys.exit()
-                data[n]={}
-                data[n]['name']='facescrub'
-                data[n]['ncla']=100
-                for s in ['train','test']:
-                    loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
-                    data[n][s] = {'x': [], 'y': []}
-                    for image, target in loader:
-                        data[n][s]['x'].append(image)
-                        data[n][s]['y'].append(target.numpy()[0])
-            elif idx == 7:
-                # notMNIST A-J letters
-                mean=(0.4254,)
-                std=(0.4501,)
-                dat={}
-                dat['train']=notMNIST(base_dir+'/data/notmnist', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
-                dat['test']=notMNIST(base_dir+'/data/notmnist', train=False, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
-                #mean, std = utils.compute_mean_std_dataset(dat['train']); print(mean,std); sys.exit()
-                data[n]={}
-                data[n]['name']='notmnist'
-                data[n]['ncla']=10
-                for s in ['train','test']:
-                    loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
-                    data[n][s] = {'x': [], 'y': []}
-                    for image, target in loader:
-                        image=image.expand(1,3,image.size(2),image.size(3))
-                        data[n][s]['x'].append(image)
-                        data[n][s]['y'].append(target.numpy()[0])
+
+
+        # for n,idx in enumerate(idata):
+        #     if idx==0:
+        #         # CIFAR10
+        #         mean=[x/255 for x in [125.3,123.0,113.9]]
+        #         std=[x/255 for x in [63.0,62.1,66.7]]
+        #         dat={}
+        #         dat['train']=datasets.CIFAR10(base_dir+'/data/',train=True,download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         dat['test']=datasets.CIFAR10(base_dir+'/data/',train=False,download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         data[n]={}
+        #         data[n]['name']='cifar10'
+        #         data[n]['ncla']=10
+        #         for s in ['train','test']:
+        #             loader=torch.utils.data.DataLoader(dat[s],batch_size=1,shuffle=False)
+        #             data[n][s]={'x': [],'y': []}
+        #             for image,target in loader:
+        #                 data[n][s]['x'].append(image)
+        #                 data[n][s]['y'].append(target.numpy()[0])
+
+        #     elif idx==1:
+        #         # CIFAR100
+        #         mean=[x/255 for x in [125.3,123.0,113.9]]
+        #         std=[x/255 for x in [63.0,62.1,66.7]]
+        #         dat={}
+        #         dat['train']=datasets.CIFAR100(base_dir+'/data/',train=True,download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         dat['test']=datasets.CIFAR100(base_dir+'/data/',train=False,download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         data[n]={}
+        #         data[n]['name']='cifar100'
+        #         data[n]['ncla']=100
+        #         for s in ['train','test']:
+        #             loader=torch.utils.data.DataLoader(dat[s],batch_size=1,shuffle=False)
+        #             data[n][s]={'x': [],'y': []}
+        #             for image,target in loader:
+        #                 data[n][s]['x'].append(image)
+        #                 data[n][s]['y'].append(target.numpy()[0])
+
+        #     elif idx==2:
+        #         # MNIST
+        #         #mean=(0.1307,) # Mean and std without including the padding
+        #         #std=(0.3081,)
+        #         mean=(0.1,) # Mean and std including the padding
+        #         std=(0.2752,)
+        #         dat={}
+        #         dat['train']=datasets.MNIST(base_dir+'/data/',train=True,download=True,transform=transforms.Compose([
+        #             transforms.Pad(padding=2,fill=0),transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         dat['test']=datasets.MNIST(base_dir+'/data/',train=False,download=True,transform=transforms.Compose([
+        #             transforms.Pad(padding=2,fill=0),transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         data[n]={}
+        #         data[n]['name']='mnist'
+        #         data[n]['ncla']=10
+        #         for s in ['train','test']:
+        #             loader=torch.utils.data.DataLoader(dat[s],batch_size=1,shuffle=False)
+        #             data[n][s]={'x': [],'y': []}
+        #             for image,target in loader:
+        #                 image=image.expand(1,3,image.size(2),image.size(3)) # Create 3 equal channels
+        #                 data[n][s]['x'].append(image)
+        #                 data[n][s]['y'].append(target.numpy()[0])
+
+        #     elif idx == 3:
+        #         # SVHN
+        #         mean=[0.4377,0.4438,0.4728]
+        #         std=[0.198,0.201,0.197]
+        #         dat = {}
+        #         dat['train']=datasets.SVHN(base_dir+'/data/',split='train',download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         dat['test']=datasets.SVHN(base_dir+'/data/',split='test',download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+        #         data[n] = {}
+        #         data[n]['name']='svhn'
+        #         data[n]['ncla']=10
+        #         for s in ['train','test']:
+        #             loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
+        #             data[n][s] = {'x': [], 'y': []}
+        #             for image, target in loader:
+        #                 data[n][s]['x'].append(image)
+        #                 data[n][s]['y'].append(target.numpy()[0]-1)
+
+
+            # elif idx == 4:
+            #     # FashionMNIST
+            #     mean=(0.2190,) # Mean and std including the padding
+            #     std=(0.3318,)
+            #     dat={}
+            #     dat['train']=datasets.FashionMNIST(base_dir+'/data/fashion_mnist', train=True, download=True, transform=transforms.Compose([
+            #         transforms.Pad(padding=2, fill=0), transforms.ToTensor(),transforms.Normalize(mean, std)]))
+            #     dat['test']=datasets.FashionMNIST(base_dir+'/data/fashion_mnist', train=False, download=True, transform=transforms.Compose([
+            #         transforms.Pad(padding=2, fill=0), transforms.ToTensor(),transforms.Normalize(mean, std)]))
+            #     data[n]={}
+            #     data[n]['name']='fashion-mnist'
+            #     data[n]['ncla']=10
+            #     for s in ['train','test']:
+            #         loader=torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
+            #         data[n][s]={'x': [], 'y': []}
+            #         for image,target in loader:
+            #             image=image.expand(1, 3, image.size(2), image.size(3))  # Create 3 equal channels
+            #             data[n][s]['x'].append(image)
+            #             data[n][s]['y'].append(target.numpy()[0])
+
+            # elif idx == 5:
+            #     # Traffic signs
+            #     mean=[0.3398,0.3117,0.3210]
+            #     std=[0.2755,0.2647,0.2712]
+            #     dat={}
+            #     dat['train']=TrafficSigns(base_dir+'/data/traffic_signs', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+            #     dat['test']=TrafficSigns(base_dir+'/data/traffic_signs', train=False, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+            #     # mean, var = utils.compute_mean_std_dataset(dat['train'])
+            #     data[n]={}
+            #     data[n]['name']='traffic-signs'
+            #     data[n]['ncla']=43
+            #     for s in ['train','test']:
+            #         loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
+            #         data[n][s] = {'x': [], 'y': []}
+            #         for image, target in loader:
+            #             data[n][s]['x'].append(image)
+            #             data[n][s]['y'].append(target.numpy()[0])
+            # elif idx == 6:
+            #     # Facescrub 100 faces
+            #     mean=[0.5163,0.5569,0.4695]
+            #     std=[0.2307,0.2272,0.2479]
+            #     dat={}
+            #     dat['train']=Facescrub(base_dir+'/data/facescrub', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) # 
+            #     dat['test']=Facescrub(base_dir+'/data/facescrub', train=False, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)]))  # 
+            #     #mean, std = utils.compute_mean_std_dataset(dat['train']); print(mean,std); sys.exit()
+            #     data[n]={}
+            #     data[n]['name']='facescrub'
+            #     data[n]['ncla']=100
+            #     for s in ['train','test']:
+            #         loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
+            #         data[n][s] = {'x': [], 'y': []}
+            #         for image, target in loader:
+            #             data[n][s]['x'].append(image)
+            #             data[n][s]['y'].append(target.numpy()[0])
+            # elif idx == 7:
+            #     # notMNIST A-J letters
+            #     mean=(0.4254,)
+            #     std=(0.4501,)
+            #     dat={}
+            #     dat['train']=notMNIST(base_dir+'/data/notmnist', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+            #     dat['test']=notMNIST(base_dir+'/data/notmnist', train=False, download=True, transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean,std)])) 
+            #     #mean, std = utils.compute_mean_std_dataset(dat['train']); print(mean,std); sys.exit()
+            #     data[n]={}
+            #     data[n]['name']='notmnist'
+            #     data[n]['ncla']=10
+            #     for s in ['train','test']:
+            #         loader = torch.utils.data.DataLoader(dat[s], batch_size=1, shuffle=False)
+            #         data[n][s] = {'x': [], 'y': []}
+            #         for image, target in loader:
+            #             image=image.expand(1,3,image.size(2),image.size(3))
+            #             data[n][s]['x'].append(image)
+            #             data[n][s]['y'].append(target.numpy()[0])
             else:
                 print('ERROR: Undefined data set',n)
                 sys.exit()
@@ -193,30 +290,47 @@ def get(seed=0, fixed_order=False, pc_valid=0.15, base_dir=None):
         # Load binary files
         for n,idx in enumerate(idata):
             data[n] = dict.fromkeys(['name','ncla','train','test'])
-            if idx==0:
-                data[n]['name']='cifar10'
-                data[n]['ncla']=10
-            elif idx==1:
+            if idx == 0:
                 data[n]['name']='cifar100'
-                data[n]['ncla']=100
-            elif idx==2:
+                data[n]['ncla']=100    
+            elif idx == 1:
                 data[n]['name']='mnist'
                 data[n]['ncla']=10
-            elif idx==3:
-                data[n]['name']='svhn'
-                data[n]['ncla']=10
-            elif idx==4:
+            elif idx == 2:
                 data[n]['name']='fashion-mnist'
                 data[n]['ncla']=10
-            elif idx==5:
+            elif idx == 3:
+                data[n]['name']='svhn'
+                data[n]['ncla']=10    
+
+            elif idx == 4:
                 data[n]['name']='traffic-signs'
                 data[n]['ncla']=43
-            elif idx==6:
-                data[n]['name']='facescrub'
-                data[n]['ncla']=100
-            elif idx==7:
-                data[n]['name']='notmnist'
-                data[n]['ncla']=10
+
+            # if idx==0:
+            #     data[n]['name']='cifar10'
+            #     data[n]['ncla']=10
+            # elif idx==1:
+            #     data[n]['name']='cifar100'
+            #     data[n]['ncla']=100
+            # elif idx==2:
+            #     data[n]['name']='mnist'
+            #     data[n]['ncla']=10
+            # elif idx==3:
+            #     data[n]['name']='svhn'
+            #     data[n]['ncla']=10
+            # elif idx==4:
+            #     data[n]['name']='fashion-mnist'
+            #     data[n]['ncla']=10
+            # elif idx==5:
+            #     data[n]['name']='traffic-signs'
+            #     data[n]['ncla']=43
+            # elif idx==6:
+            #     data[n]['name']='facescrub'
+            #     data[n]['ncla']=100
+            # elif idx==7:
+            #     data[n]['name']='notmnist'
+            #     data[n]['ncla']=10
             else:
                 print('ERROR: Undefined data set',n)
                 sys.exit()

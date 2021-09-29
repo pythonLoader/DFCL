@@ -21,7 +21,7 @@ def set_config(args):
         args.lr = 1e-3/3
         args.wd = 1e-4
 
-    if 'fedweit' in args.model:
+    if 'dfcl' in args.model:
         args.wd = 1e-4
         args.lambda_l1 = 1e-3
         args.lambda_l2 = 100.
@@ -36,10 +36,13 @@ def set_data_config(args):
     # CIFAR10(0), CIFAR100(1), MNIST(2), SVHN(3),
     # F-MNIST((4), TrafficSign(5), FaceScrub(6), N-MNIST(7)
     
+    # CIFAR100(0), MNIST(1), F-MNIST(2), SVHN(3), TrafficSign(4)
+
+
     if args.task in ['non_iid_50'] :
-        args.datasets    = [0, 1, 2, 3]
+        args.datasets    = [0, 1, 2, 3, 4]
         args.num_clients = 3
-        args.num_tasks   = 2 
+        args.num_tasks   = 10 
         args.num_classes = 5
         args.frac_clients = 1.0
     
