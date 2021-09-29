@@ -41,19 +41,19 @@ class NetModule:
                 (3200,800),
                 (800,500)]
         
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             self.decomposed_variables = {
                 'shared': [],
                 'adaptive':{},
                 'mask':{},
                 'bias':{},
             }
-            if self.args.model == 'fedweit':
+            if self.args.model == 'dfcl':
                 self.decomposed_variables['atten'] = {}
                 self.decomposed_variables['from_kb'] = {}
 
     def init_state(self, cid):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             self.state = {
                 'client_id':  cid,
                 'decomposed_weights': {
@@ -64,7 +64,7 @@ class NetModule:
                 },
                 'heads_weights': self.initial_heads_weights,
             }
-            if self.args.model == 'fedweit':
+            if self.args.model == 'dfcl':
                 self.state['decomposed_weights']['atten'] = {}
                 self.state['decomposed_weights']['from_kb'] = {}
         else:
@@ -78,7 +78,7 @@ class NetModule:
         self.state['heads_weights'] = []
         for h in self.heads:
             self.state['heads_weights'].append(h.get_weights())
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             for var_type, layers in self.decomposed_variables.items():
                 self.state['decomposed_weights'] = {
                     'shared': [layer.numpy() for layer in self.decomposed_variables['shared']],
@@ -86,7 +86,7 @@ class NetModule:
                     'mask':{tid: [layer.numpy() for lid, layer in self.decomposed_variables['mask'][tid].items()] for tid in self.decomposed_variables['mask'].keys()},
                     'bias':{tid: [layer.numpy() for lid, layer in self.decomposed_variables['bias'][tid].items()] for tid in self.decomposed_variables['bias'].keys()},
                 }
-                if self.args.model == 'fedweit':
+                if self.args.model == 'dfcl':
                     self.state['decomposed_weights']['from_kb'] = {tid: [layer.numpy() for lid, layer in self.decomposed_variables['from_kb'][tid].items()] for tid in self.decomposed_variables['from_kb'].keys()}
                     self.state['decomposed_weights']['atten'] = {tid: [layer.numpy() for lid, layer in self.decomposed_variables['atten'][tid].items()] for tid in self.decomposed_variables['atten'].keys()}
         else:
@@ -100,7 +100,7 @@ class NetModule:
         for i, h in enumerate(self.state['heads_weights']):
                 self.heads[i].set_weights(h)
 
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             for var_type, values in self.state['decomposed_weights'].items():
                 if var_type == 'shared':
                     for lid, weights in enumerate(values):
@@ -113,7 +113,7 @@ class NetModule:
             self.model_body.set_weights(self.state['body_weights'])
 
     def init_global_weights(self):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             global_weights = []
             for i in range(len(self.shapes)):
                 global_weights.append(self.initializer(self.shapes[i]).numpy())
@@ -167,12 +167,12 @@ class NetModule:
         return tf_activations.sigmoid(mask)
 
     def get_model_by_tid(self, tid):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             self.switch_model_params(tid)
         return self.models[tid]
 
     def get_trainable_variables(self, curr_task, head=True):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             return self.get_decomposed_trainaible_variables(curr_task, retroactive=False, head=head)
         else:
             if head:
@@ -205,7 +205,7 @@ class NetModule:
         return trainable_variables
 
     def get_body_weights(self, task_id=None):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             prev_weights = {}
             for lid in range(len(self.shapes)):
                 prev_weights[lid] = {}
@@ -222,7 +222,7 @@ class NetModule:
             return self.model_body.get_weights()
 
     def set_body_weights(self, body_weights):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             for lid, wgt in enumerate(body_weights):
                 sw = self.get_variable('shared', lid)
                 sw.assign(wgt)
@@ -235,7 +235,7 @@ class NetModule:
             dlay.aw = self.get_variable('adaptive', lid, tid)
             dlay.bias = self.get_variable('bias', lid, tid)
             dlay.mask = self.generate_mask(self.get_variable('mask', lid, tid))
-            if self.args.model == 'fedweit':
+            if self.args.model == 'dfcl':
                 dlay.atten = self.get_variable('atten', lid, tid) 
                 dlay.aw_kb = self.get_variable('from_kb', lid, tid) 
 
