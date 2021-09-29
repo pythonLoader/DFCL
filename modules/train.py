@@ -102,7 +102,7 @@ class TrainModule:
                 self.optimizer.apply_gradients(zip(gradients, self.params['trainables']))
             self.validate()
             self.evaluate()
-            if self.args.model in ['fedweit']:
+            if self.args.model in ['dfcl']:
                 self.calculate_capacity()
             self.adaptive_lr_decay()
             if self.state['early_stop']:
@@ -226,7 +226,7 @@ class TrainModule:
         return self.state['communication']
 
     def aggregate(self, updates):
-        if self.args.sparse_comm and self.args.model in ['fedweit']:
+        if self.args.sparse_comm and self.args.model in ['dfcl']:
             client_weights = [u[0][0] for u in updates]
             client_masks = [u[0][1] for u in updates]
             client_sizes = [u[1] for u in updates]

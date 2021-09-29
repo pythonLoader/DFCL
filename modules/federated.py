@@ -113,7 +113,7 @@ class ClientModule:
         self.init_model(initial_weights)
 
     def init_model(self, initial_weights):
-        decomposed = True if self.args.model in ['fedweit'] else False
+        decomposed = True if self.args.model in ['dfcl'] else False
         if self.args.base_network == 'lenet':
             self.nets.build_lenet(initial_weights, decomposed=decomposed)
 
@@ -187,7 +187,7 @@ class ClientModule:
         return self.nets.get_model_by_tid(tid)
 
     def set_weights(self, weights):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             if weights is None:
                 return None
             for i, w in enumerate(weights):
@@ -198,7 +198,7 @@ class ClientModule:
             self.nets.set_body_weights(weights)
 
     def get_weights(self):
-        if self.args.model in ['fedweit']:
+        if self.args.model in ['dfcl']:
             if self.args.sparse_comm:
                 hard_threshold = []
                 sw_pruned = []
